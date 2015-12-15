@@ -1,0 +1,41 @@
+{{#partial "admin-content"}}
+    <h2><span style="font-family: icons"></span> Issue a book:</h2>
+
+    {{#if error}}
+      <p style="color: red">{{error}}</p>
+    {{/if}}
+	
+	<form role='form' action="/admin/issue" method="post" style='max-width: 800px;'>
+        <label>Book's ISBN:</label>
+        <input type='text' name="isbn" placeholder='ISBN of the book'/>
+        <br/>
+        <label>User's Email id:</label>
+        <input type='text' name="email" placeholder='Email id'/>
+        <br/>
+        <input type='text' name='type' value='issue' style="display: none" />
+        <button type='submit'> Issue</button>
+        <a href='/admin'>
+          <button type="button"/> Cancel </button>
+        </a>
+        <br/>
+    </form>
+
+    <h2>Or. Submit a book</h2>
+    <form role='form' action="/admin/issue" method="post" style='max-width: 800px;'>
+        <label>Book's ISBN:</label>
+        <input type='text' name="isbn" placeholder='ISBN of the book'/>
+        <br/>
+        <label>User's Email id:</label>
+        <input type='text' name="email" placeholder='Email id'/>
+        <br/>
+        <input type='text' name='type' value='submit' style="display: none" />
+        <button type='submit'> Submit</button>
+        <a href='/admin'>
+          <button type="button"/> Cancel </button>
+        </a>
+        <br/>
+    </form>
+
+{{/partial}}
+
+{{> adminbase}}

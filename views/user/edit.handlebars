@@ -1,0 +1,20 @@
+{{#partial 'auth-form'}}
+	<h2><span style="font-family: icons">✏</span> Edit User info:</h2>
+	{{#if error}}
+		<p style="color: red">{{error}}</p>
+	{{/if}}
+	<h3> Email: {{user.email}} </h3>
+	<form role='form' action="/user/edit" method="post" style='max-width: 300px;'>
+		<input type='text' name="fullname" placeholder='Name' value="{{user.fullname}}" />
+		<input type='password' name="password" placeholder='Reset Password (optional)'/>
+		<input type='password' name="retype" placeholder='Retype Password'/>
+		<br/>
+		<button type='submit'> Save</button>
+		<a href='/'>
+			<button type="button"/> Cancel </button>
+		</a>
+		<br/>
+	</form>
+{{/partial}}
+
+{{> auth}}

@@ -1,0 +1,37 @@
+{{#partial "main-content"}}
+	<div class="content-wrapper">
+		<br/><br/>
+		<form role='form' action="/find" method="post" style='max-width: 800px;'>
+		    <input type='text' name="query" placeholder='Enter the book title'/>
+			<select name="field">
+			  <option value="author">Author</option> 
+			  <option value="title" selected>Title</option>
+			  <option value="isbn">ISBN</option>
+			</select>
+			&nbsp;&nbsp;
+		    <button type='submit'> Search</button>
+		</form>
+
+		{{#if error}}
+			<span style='color: red'>{{error}}</span>
+		{{/if}}
+
+		{{#if books}}
+			<h2>Results: </h2>
+			{{#each books}}
+				<div class='book-card'>
+				<h3>{{this.title}}</h3>
+				<strong>Author</strong>: {{this.authors}} <br/>
+				<strong>ISBN</strong>: {{this.isbn}} <br/>
+				<strong>Publisher</strong>: {{this.publisher}} <br/>
+				<strong>Subject</strong>: {{this.subject}} <br/>
+				<strong>Shelf No</strong>: {{this.shelf}} <br/>
+				<strong>Number of copies</strong>: {{math this.ncopies "-" this.nissued}}/{{this.ncopies}}<br/>
+				<strong>Notes</strong>: {{this.notes}}
+			</div>
+			{{/each}}
+		{{/if}}
+	</div>
+{{/partial}}
+
+{{> incheader}}

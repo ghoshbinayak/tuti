@@ -1,0 +1,54 @@
+{{#partial "admin-content"}}
+    <h2><span style="font-family: icons">✏</span> Update book info:</h2>
+    {{#if error}}
+      <p style="color: red">{{error}}</p>
+    {{/if}}
+
+    {{#if book}}
+    <h3>ISBN: {{book.isbn}} </h3>
+    <form role='form' action="/admin/books/update" method="post" style='max-width: 800px;'>
+        <label>Title:</label>
+        <input type='text' name="title" placeholder='Title of the book' value="{{book.title}}" />
+        <br/>
+        <label>Authors:</label>
+        <input type='text' name="authors" placeholder='List of Authors' value="{{book.authors}}" />
+        <br/>
+        <label>Publisher:</label>
+        <input type='text' name="publisher" placeholder='Name of publisher' value="{{book.publisher}}"/>
+        <br/>
+        <label>Subject:</label>
+        <input type='text' name="subject" placeholder='Subject'value="{{book.subject}}"/>
+        <br/>
+        <label>Notes:</label>
+        <input type='text' name="notes" placeholder='Notes' value="{{book.notes}}" />
+        <br/>
+        <label>Shelf no:</label>
+        <input type='text' name="shelf" placeholder='Shelf No.' value="{{book.shelf}}"/>
+        <br/>
+        <label>No of copies:</label>
+        <input type='number' name="ncopies" placeholder='No of copies' value="{{book.ncopies}}" />
+        <br/>
+        <input type='text' name="isbn" value="{{book.isbn}}" style="display: none" /> 
+        <button type='submit'> Save</button>
+        <a href='/admin/books'>
+          <button type="button"/> Cancel </button>
+        </a>
+        <br/>
+    </form>
+    {{else}}
+        <form role='form' action="/admin/books/remove" method="post" style='max-width: 800px;'>
+            <input type='text' name="query" placeholder='Search for a book'/>
+            <select name="field">
+              <option value="author">Author</option> 
+              <option value="title" selected>Title</option>
+              <option value="isbn">ISBN</option>
+            </select>
+            &nbsp;&nbsp;
+            <input type="text" name="update", value="true" style="display: none" />
+            <button type='submit'> Search</button>
+        </form>
+        <a href="/admin/books">back</a>
+    {{/if}}
+{{/partial}}
+
+{{> adminbase}}
