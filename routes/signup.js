@@ -1,44 +1,45 @@
-var express = require('express'),
-	router = express.Router(),
-	users = require('../models/users'),
-	email_validator = require('email-validator');
+var express = require('express');
+var router = express.Router();
+var	users = require('../models/users');
+var	scrypt = require('scrypt');
+var email_validator = require('email-validator');
 
-/* Show the sign up page */
-router.get('/', function(req, res) {
-	if(req.user){
-		res.redirect('/');
-	}
-	else{
-		res.render('auth/signup', {title: 'Sign Up'});
-	}
-});
-
-/* Create new accoutn */
-router.post('/', function(req, res) {
+router.post('/', function(req, res){
 	var fullname = req.body.fullname;
 	var email = req.body.email;
 	var pass = req.body.password;
 	var retype = req.body.retype;
 	if(!email_validator.validate(email)){
-		res.render('auth/signup', {title: 'Sign up', error: "Invalid email address."});
+		res.status(400).json({ error: {'message': 'Invalid email address.' + fullname,
+						   'type': 'SignUpFailed'
+						}});
 	}
 	else{
 		var promise = users.getuser(email);
 		promise.then(function(result){
 			if(result.length === 0){
 				if(pass != retype){
-					res.render('auth/signup', {title: 'Sign up', error: "Passwords didnot match."});
+					res.status(400).json({ error: {'message': "Passwords didn't match.",
+									   'type': 'SignUpFailed'
+									}});
 				}
 				else{
 					users.createuser(email, pass, fullname);
-					res.redirect('/?message=signupsucc');
+					res.status(200).json({ success: 'User created! Check email.',
+										   user: email
+						});
 				}
 			}
 			else{
-				res.render('auth/signup', {title: 'Sign up', error: "User exists! -_-"});
+				res.status(400).json({ error: {'message': "The email is already registered.",
+								   'type': 'SignUpFailed',
+								   'html': '<a href=\'/auth/forgot\'>Frogot password?</a>'
+								}});
 			}
 		}).catch(function(err){
-			res.render('auth/signup', {title: 'Sign up', error: err.toString()});
+			res.status(400).json({ error: {'message': err.toString(),
+							   'type': 'SignUpFailed'
+							}});
 		});
 	}
 });

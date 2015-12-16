@@ -63,23 +63,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(function(req, res, next){
-  if(req.session && req.session.email){
-    var promise = users.getuser(req.session.email);
-    promise.then(function(result){
-      if(result.length > 0){
-        req.user = result[0];
-        delete req.user.pass;
-        res.locals.user = req.user;
-      }
-      next();
-    });
-  }
-  else {
-    next();
-  }  
-});
-
 app.use('/admin', admin);
 app.use('/api', api);
 app.use('/', index);
