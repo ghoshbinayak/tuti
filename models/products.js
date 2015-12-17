@@ -24,6 +24,7 @@ var add = function(name, description, price, photos) {
 		var product =  {'name': name,
 						'description': description,
 						'price': price,
+						'isPub': false,
 						'photos': photos};
 		products.insert(product, function(err, doc){
 			if(!err){
@@ -43,10 +44,11 @@ var update = function(id, name, description, price, photos){
 		var product =  {'name': name,
 					'description': description,
 					'price': price,
+					'isPub': false,
 					'photos': photos};
 		products.update({_id: ObjectId(id)}, {$set: product}, function(err, result){
 			if(!err){
-				resolve(result);
+				resolve(result.result);
 			}
 			else{
 				reject(err);
@@ -83,9 +85,9 @@ var list = function(page){
 var del = function(id) {
 	return new Promise(function(resolve, reject){
 		var products = db.collection('products');
-		products.remove({_id: ObjectId(id)}, function(err, nremoved){
+		products.remove({_id: ObjectId(id)}, function(err, result){
 			if(!err){
-				resolve(nremoved);
+				resolve(result.result);
 			}
 			else{
 				reject(err);
@@ -95,12 +97,45 @@ var del = function(id) {
 	});
 };
 
+var publish = function(id) {
+	return new Promise(function(resolve, reject){
+		var products = db.collection('products');
+		products.update({_id: ObjectId(id)}, {$set: {isPub: true}}, function(err, result){
+			if(!err){
+				resolve(result);
+			}
+			else{
+				reject(err);
+			}
+			db.close();
+		});
+	});
+};
+
+var unpublish = function(id) {
+	return new Promise(function(resolve, reject){
+		var products = db.collection('products');
+		products.update({_id: ObjectId(id)}, {$set: {isPub: false}}, function(err, result){
+			if(!err){
+				resolve(result);
+			}
+			else{
+				reject(err);
+			}
+			db.close();
+		});
+	});
+};
+
+
 module.exports = {
 	get: get,
 	add: add,
 	del: del,
 	list: list,
-	update: update
+	update: update,
+	publish: publish,
+	unpublish: unpublish
 };
 
 process.on('SIGINT', function() {

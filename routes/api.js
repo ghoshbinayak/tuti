@@ -21,6 +21,9 @@ router.use('/signup', require('./signup'));
 /* Product handler */
 router.use('/products', require('./products'));
 
+/* Collection handler */
+router.use('/sets', require('./sets'));
+
 /* Unknown api */
 router.all('/*', function(req, res){
 	res.json({error: {message: 'Wrong endpoint',
