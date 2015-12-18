@@ -1,5 +1,6 @@
 'use strict'
-var db = require('mongoskin').db('mongodb://localhost:27017/test');
+var config = require('../options');
+var db = require('mongoskin').db(config.dbConfig.connURL);
 var ObjectId = require('mongodb').ObjectID;
 var products = require('./products');
 

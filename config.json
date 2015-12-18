@@ -1,0 +1,9 @@
+{
+	"host": "localhost",
+	"port": 27017,
+	"db": "test",
+	"user": "unknown",
+	"password": "notSet",
+	"connURL": "mongodb://localhost:27017/test",
+	"jwtSecret": "7dbS96dig3zoso3BC52UhqOE5BjzFbf9"
+}

@@ -24,10 +24,23 @@ router.use('/products', require('./products'));
 /* Collection handler */
 router.use('/sets', require('./sets'));
 
+/* User profile */
+router.use('/user', require('./user'));
+
+/* Custom Pages */
+router.use('/pages', require('./pages'));
+
 /* Unknown api */
 router.all('/*', function(req, res){
 	res.json({error: {message: 'Wrong endpoint',
 					  type: 'unsupportedAPI'}});
+});
+
+router.use(function (err, req, res, next) {
+  if (err.name === 'UnauthorizedError') {
+    res.status(401).json({error: {message: 'Unauthorized request.',
+						 		  type: 'UnauthorizedError'}});
+  }
 });
 
 module.exports = router;

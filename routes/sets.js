@@ -1,10 +1,12 @@
 var express = require('express');
+var jwt = require('express-jwt');
 var router = express.Router();
 var	products = require('../models/products');
 var sets = require('../models/sets');
+var config = require('../options');
 
 
-router.post('/new', function(req, res){
+router.post('/new', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
 	var name = req.body.name;
 	var des = req.body.description;
 	var photos = req.body.photos;
@@ -36,7 +38,7 @@ router.get('/info', function(req, res){
 	});
 });
 
-router.put('/add', function(req, res){
+router.put('/add', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
 	var sid = req.body.sid;
 	var pid = req.body.pid;
 	sets.add(sid, pid).then(function(result){
@@ -55,7 +57,7 @@ router.put('/add', function(req, res){
 	});
 });
 
-router.delete('/remove', function(req, res){
+router.delete('/remove', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
 	var sid = req.body.sid;
 	var pid = req.body.pid;
 	sets.remove(sid, pid).then(function(result){
@@ -67,7 +69,7 @@ router.delete('/remove', function(req, res){
 	});
 });
 
-router.delete('/del', function(req, res){
+router.delete('/del', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
 	var sid = req.query.id;
 	sets.del(sid).then(function(result){
 		res.json({success: {message: 'Set deleted.',
@@ -78,7 +80,7 @@ router.delete('/del', function(req, res){
 	});
 });
 
-router.put('/update', function(req, res){
+router.put('/update', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
 	var id = req.body.id;
 	var name = req.body.name;
 	var des = req.body.description;

@@ -1,8 +1,11 @@
 var express = require('express');
+var jwt = require('express-jwt');
 var router = express.Router();
 var	products = require('../models/products');
+var config = require('../options');
 
-router.post('/add', function(req, res){
+
+router.post('/add', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
 	var name = req.body.name;
 	var price = req.body.price;
 	var des = req.body.description;
@@ -34,7 +37,7 @@ router.get('/info', function(req, res){
 	});
 });
 
-router.put('/update', function(req, res){
+router.put('/update', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
 	var name = req.body.name;
 	var price = req.body.price;
 	var des = req.body.description;
@@ -70,7 +73,7 @@ router.get('/list', function(req, res){
 	});
 });
 
-router.delete('/', function(req, res){
+router.delete('/', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
 	var id = req.query.id;
 	products.del(id).then(function(result){
 		res.json({success: {message: "Deleted product",

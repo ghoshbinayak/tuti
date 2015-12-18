@@ -10,36 +10,36 @@ router.post('/', function(req, res){
 	var pass = req.body.password;
 	var retype = req.body.retype;
 	if(!email_validator.validate(email)){
-		res.status(400).json({ error: {'message': 'Invalid email address.' + fullname,
-						   'type': 'SignUpFailed'
-						}});
+		res.status(400).json({ error: {message: 'Invalid email address.',
+						   type: 'SignUpFailed'}});
 	}
 	else{
-		var promise = users.getuser(email);
+		var promise = users.get(email);
 		promise.then(function(result){
-			if(result.length === 0){
+			if(!result){
 				if(pass != retype){
-					res.status(400).json({ error: {'message': "Passwords didn't match.",
-									   'type': 'SignUpFailed'
-									}});
+					res.status(400).json({ error: {message: "Passwords didn't match.",
+									   type: 'SignUpFailed'}});
 				}
 				else{
-					users.createuser(email, pass, fullname);
-					res.status(200).json({ success: 'User created! Check email.',
-										   user: email
-						});
+					users.create(email, pass, fullname).then(function(result){
+						res.status(200).json({ success: {message: 'User created! Check email.',
+											   user: {email: result.email,
+											   		  id: result._id}}});
+					}).catch(function(err){
+						res.status(400).json({ error: {message: err.toString(),
+											   type: 'DBerror'}});						
+					});
 				}
 			}
 			else{
-				res.status(400).json({ error: {'message': "The email is already registered.",
-								   'type': 'SignUpFailed',
-								   'html': '<a href=\'/auth/forgot\'>Frogot password?</a>'
-								}});
+				res.status(400).json({ error: {message: "The email is already registered.",
+								   type: 'SignUpFailed',
+								   html: '<a href=\'/auth/forgot\'>Frogot password?</a>'}});
 			}
 		}).catch(function(err){
-			res.status(400).json({ error: {'message': err.toString(),
-							   'type': 'SignUpFailed'
-							}});
+			res.status(400).json({ error: {message: err.toString(),
+							   type: 'SignUpFailed'}});
 		});
 	}
 });
