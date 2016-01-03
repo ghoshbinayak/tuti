@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 var config = require('../options');
 var db = require('mongoskin').db(config.dbConfig.connURL);
 var ObjectId = require('mongodb').ObjectID;
@@ -145,4 +145,4 @@ process.on('SIGINT', function() {
         console.log('database connection has been closed.');
         process.exit();
     });
-})
+});

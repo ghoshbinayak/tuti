@@ -1,12 +1,13 @@
+'use strict';
 var express = require('express');
 var router = express.Router();
-var requireLogin = require('../middleware').requireLogin;
-var books = require('../models/books');
+var path    = require("path");
 
 /* GET home page. */
 router.get('/*', function(req, res){
-	res.send('SPA');
+	res.sendFile(path.join(path.dirname(__dirname)+'/views/index.html'));
 });
+
 // router.get('/', function(req, res) {
 // 	if(req.session.email){
 // 		res.render('home', { title: 'Home' });

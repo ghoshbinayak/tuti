@@ -1,3 +1,4 @@
+'use strict';
 var express = require('express');
 var jwt = require('express-jwt');
 var router = express.Router();
@@ -17,8 +18,8 @@ router.post('/new', jwt({secret: config.dbConfig.jwtSecret}), function(req, res)
 	});
 });
 
-router.get('/info', function(req, res){
-	var id = req.query.id;
+router.get('/info/:id', function(req, res){
+	var id = req.params.id;
 	pages.get(id).then(function(result){
 		if (result) {
 			res.json({success: {message: 'Page found',
@@ -34,8 +35,8 @@ router.get('/info', function(req, res){
 	});
 });
 
-router.delete('/del', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
-	var id = req.query.id;
+router.delete('/del/:id', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
+	var id = req.params.id;
 	pages.del(id).then(function(result){
 		res.json({success: {message: 'Page deleted.',
 							count: result.n}});

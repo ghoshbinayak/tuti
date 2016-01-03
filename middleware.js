@@ -1,3 +1,4 @@
+'use strict';
 var users = require('./models/users');
 
 var requireLogin = function(req, res, next){
@@ -7,7 +8,7 @@ var requireLogin = function(req, res, next){
 	else{
 		next();
 	}
-}
+};
 
 var ifAdmin = function(req, res, next){
 	if(req.user.isadmin){
@@ -16,7 +17,7 @@ var ifAdmin = function(req, res, next){
 	else{
 		res.render('admin/home', {message: "Sorry you don't have admin access. :( "});
 	}
-}
+};
 
 module.exports = {
 	requireLogin: requireLogin,

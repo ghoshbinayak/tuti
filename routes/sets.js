@@ -1,3 +1,4 @@
+'use strict';
 var express = require('express');
 var jwt = require('express-jwt');
 var router = express.Router();
@@ -21,8 +22,8 @@ router.post('/new', jwt({secret: config.dbConfig.jwtSecret}), function(req, res)
 	});
 });
 
-router.get('/info', function(req, res){
-	var id = req.query.id;
+router.get('/info/:id', function(req, res){
+	var id = req.params.id;
 	sets.get(id).then(function(result){
 		if (result) {
 			res.json({success: {message: 'Set found',
@@ -69,8 +70,8 @@ router.delete('/remove', jwt({secret: config.dbConfig.jwtSecret}), function(req,
 	});
 });
 
-router.delete('/del', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
-	var sid = req.query.id;
+router.delete('/del/:id', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
+	var sid = req.params.id;
 	sets.del(sid).then(function(result){
 		res.json({success: {message: 'Set deleted.',
 							count: result.n}});

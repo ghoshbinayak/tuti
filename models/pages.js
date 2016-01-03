@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 var config = require('../options');
 var db = require('mongoskin').db(config.dbConfig.connURL);
 var ObjectId = require('mongodb').ObjectID;
@@ -16,7 +16,7 @@ var get = function(id){
 			}
 		});
 	});
-}
+};
 
 var create = function(title, body){
 	return new Promise(function(resolve, reject){
@@ -36,7 +36,7 @@ var create = function(title, body){
 			db.close();
 		});
 	});
-}
+};
 
 var update = function(id, title, body){
 	return new Promise(function(resolve, reject){
@@ -54,7 +54,7 @@ var update = function(id, title, body){
 					 	}
 					 });		
 	});
-}
+};
 
 var del = function(id){
 	return new Promise(function(resolve, reject){
@@ -68,7 +68,7 @@ var del = function(id){
 			}
 		});
 	});
-}
+};
 
 var list = function(page){
 	return new Promise(function(resolve, reject){
@@ -108,4 +108,4 @@ process.on('SIGINT', function() {
         console.log('database connection has been closed.');
         process.exit();
     });
-})
+});

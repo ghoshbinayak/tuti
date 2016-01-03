@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 var db = require('mongoskin').db('mongodb://localhost:27017/test');
 
 var getbook = function(isbn){
@@ -107,4 +107,4 @@ process.on('SIGINT', function() {
         console.log('database connection has been closed.');
         process.exit();
     });
-})
+});

@@ -1,3 +1,4 @@
+'use strict';
 var express = require('express');
 var jwt = require('express-jwt');
 var router = express.Router();
@@ -5,9 +6,9 @@ var users = require('../models/users');
 var config = require('../options');
 
 
-router.get('/info', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
-	var uid = req.query.id;
-	var user = users.getuser(id);
+router.get('/info/:id', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
+	var uid = req.params.id;
+	var user = users.getuser(uid);
 	user.then(function(result){
 		if(result){
 			res.json({success: {message: 'User found.',

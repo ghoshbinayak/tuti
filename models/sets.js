@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 var config = require('../options');
 var db = require('mongoskin').db(config.dbConfig.connURL);
 var ObjectId = require('mongodb').ObjectID;
@@ -91,7 +91,7 @@ var remove = function(sid, pid){
 			}
 		});
 	});
-}
+};
 
 var update = function(id, name, description, range, photos){
 	return new Promise(function(resolve, reject){
@@ -167,4 +167,4 @@ process.on('SIGINT', function() {
         console.log('database connection has been closed.');
         process.exit();
     });
-})
+});

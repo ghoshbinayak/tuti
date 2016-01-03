@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -8,12 +8,14 @@ var index = require('./routes/index');
 var admin = require('./routes/admin');
 var api = require('./routes/api');
 var users = require('./models/users');
+var compress = require('compression');
 
 
 var app = express();
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(compress());  
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

@@ -1,3 +1,4 @@
+'use strict';
 var express = require('express');
 var jwt = require('express-jwt');
 var router = express.Router();
@@ -20,8 +21,8 @@ router.post('/add', jwt({secret: config.dbConfig.jwtSecret}), function(req, res)
 	});
 });
 
-router.get('/info', function(req, res){
-	var id = req.query.id;
+router.get('/info/:id', function(req, res){
+	var id = req.params.id;
 	products.get(id).then(function(result){
 		if(result){
 			res.json({success: {message: 'Product found',
@@ -73,8 +74,8 @@ router.get('/list', function(req, res){
 	});
 });
 
-router.delete('/', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
-	var id = req.query.id;
+router.delete('/del/:id', jwt({secret: config.dbConfig.jwtSecret}), function(req, res){
+	var id = req.params.id;
 	products.del(id).then(function(result){
 		res.json({success: {message: "Deleted product",
 							count: result.n}});
