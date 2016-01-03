@@ -9,27 +9,35 @@
   "dependencies": {
     "babel-preset-react": "^6.3.13",
     "babelify": "^7.2.0",
+    "backbone": "^1.2.3",
     "body-parser": "~1.13.2",
+    "compression": "^1.6.0",
     "debug": "~2.2.0",
+    "email-validator": "^1.0.3",
     "express": "~4.13.1",
-    "jade": "~1.11.0",
-    "morgan": "~1.6.1",
-    "passport": "^0.2.2",
-    "react": "^0.14.3",
-    "react-dom": "^0.14.3",
     "express-handlebars": "^2.0.1",
+    "express-jwt": "^3.1.0",
+    "jsonwebtoken": "^5.4.1",
+    "mongoskin": "^2.0.3",
+    "morgan": "~1.6.1",
+    "randomstring": "^1.1.0",
     "scrypt": "^5.4.1",
     "serve-favicon": "~2.3.0",
-    "jsonwebtoken": "^5.4.1",
-    "email-validator": "^1.0.3",
-    "mongoskin": "^2.0.3",
-    "randomstring": "^1.1.0",
-    "express-jwt": "^3.1.0"
+    "underscore": "^1.8.3",
+    "zepto-browserify": "^1.1.6-1",
+    "mongodb": "^2.0.46"
   },
   "devDependencies": {
     "bson": "^0.4.19",
     "connect-mongo": "^0.8.2",
     "expect": "^1.12.2",
-    "mongodb": "^2.0.46"
+    "grunt": "^0.4.5",
+    "grunt-browserify": "^4.0.1",
+    "grunt-contrib-coffee": "^0.13.0",
+    "grunt-contrib-cssmin": "^0.14.0",
+    "grunt-contrib-jshint": "^0.11.3",
+    "grunt-contrib-less": "^1.1.0",
+    "grunt-contrib-uglify": "^0.11.0",
+    "grunt-contrib-watch": "^0.6.1"
   }
 }
