@@ -1,4 +1,120 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var Backbone = require('backbone');
+var _ = require('underscore');
+
+var tuti = {}; // create namespace for our app
+
+tuti.Router = Backbone.Router.extend({
+  routes: {
+    '*filter' : 'setFilter'
+  },
+  setFilter: function(params) {
+    console.log('tuti.router.params = ' + params); // just for didactical purposes.
+    window.filter = params.trim() || '';
+    tuti.todoList.trigger('reset');
+  }
+});
+
+tuti.Todo = Backbone.Model.extend({
+  defaults: {
+    title: '',
+    completed: false,
+  },
+  toggle: function(){
+    this.save({completed: !this.get('completed')});
+  }
+});
+
+tuti.TodoList = Backbone.Collection.extend({
+  model: tuti.Todo,
+  // localStorage: new Store("backbone-todo")
+});
+
+// instance of the Collection
+tuti.todoList = new tuti.TodoList();
+
+// renders individual todo items list (li)
+tuti.TodoView = Backbone.View.extend({
+  tagName: 'li',
+  template: _.template($('#item-template').html()),
+  render: function(){
+    this.$el.html(this.template(this.model.toJSON()));
+    this.input = this.$('.edit');
+    return this; // enable chained calls
+  },
+  initialize: function(){
+    this.model.on('change', this.render, this);
+  },
+  events: {
+    'dblclick label' : 'edit',
+    'keypress .edit' : 'updateOnEnter',
+    'blur .edit' : 'close',
+    'click .toggle': 'toggleCompleted'
+  },
+  edit: function(){
+    this.$el.addClass('editing');
+    this.input.focus();
+  },
+  close: function(){
+    var value = this.input.val().trim();
+    if(value) {
+      this.model.save({title: value});
+    }
+    this.$el.removeClass('editing');
+  },
+  updateOnEnter: function(e){
+    if(e.which == 13){
+      this.close();
+    }
+  },
+  toggleCompleted: function(){
+    this.model.toggle();
+  }
+});
+
+
+// renders the full list of todo items calling TodoView for each one.
+tuti.AppView = Backbone.View.extend({
+  el: '#todoapp',
+  initialize: function () {
+    this.input = this.$('#new-todo');
+    // when new elements are added to the collection render then with addOne
+    tuti.todoList.on('add', this.addOne, this);
+    tuti.todoList.on('reset', this.addAll, this);
+    tuti.todoList.fetch(); // Loads list from local storage
+  },
+  events: {
+    'keypress #new-todo': 'createTodoOnEnter'
+  },
+  createTodoOnEnter: function(e){
+    if ( e.which !== 13 || !this.input.val().trim() ) { // ENTER_KEY = 13
+      return;
+    }
+    tuti.todoList.create(this.newAttributes());
+    this.input.val(''); // clean input box
+  },
+  addOne: function(todo){
+    var view = new tuti.TodoView({model: todo});
+    $('#todo-list').append(view.render().el);
+  },
+  addAll: function(){
+    this.$('#todo-list').html(''); // clean the todo list
+    tuti.todoList.each(this.addOne, this);
+  },
+  newAttributes: function(){
+    return {
+      title: this.input.val().trim(),
+      completed: false
+    };
+  }
+});
+
+
+tuti.router = new tuti.Router();
+Backbone.history.start();
+
+tuti.appView = new tuti.AppView();
+},{"backbone":2,"underscore":3}],2:[function(require,module,exports){
 (function (global){
 //     Backbone.js 1.2.3
 
@@ -11,12 +127,12 @@
 
   // Establish the root object, `window` (`self`) in the browser, or `global` on the server.
   // We use `self` instead of `window` for `WebWorker` support.
-  var root = (typeof self == 'object' && self.self === self && self) ||
-            (typeof global == 'object' && global.global === global && global);
+  var root = (typeof self == 'object' && self.self == self && self) ||
+            (typeof global == 'object' && global.global == global && global);
 
   // Set up Backbone appropriately for the environment. Start with AMD.
   if (typeof define === 'function' && define.amd) {
-    define(['underscore', 'zepto-browserify', 'exports'], function(_, $, exports) {
+    define(['underscore', 'jquery', 'exports'], function(_, $, exports) {
       // Export global even in AMD case in case this script is loaded with
       // others that may still expect a global Backbone.
       root.Backbone = factory(root, exports, _, $);
@@ -25,7 +141,7 @@
   // Next for Node.js or CommonJS. jQuery may not be needed as a module.
   } else if (typeof exports !== 'undefined') {
     var _ = require('underscore'), $;
-    try { $ = require('zepto-browserify'); } catch (e) {}
+    try { $ = require('jquery'); } catch(e) {}
     factory(root, exports, _, $);
 
   // Finally, as a browser global.
@@ -33,7 +149,7 @@
     root.Backbone = factory(root, {}, root._, (root.jQuery || root.Zepto || root.ender || root.$));
   }
 
-})(function(root, Backbone, _, $) {
+}(function(root, Backbone, _, $) {
 
   // Initial Setup
   // -------------
@@ -168,9 +284,9 @@
   // Guard the `listening` argument from the public API.
   var internalOn = function(obj, name, callback, context, listening) {
     obj._events = eventsApi(onApi, obj._events || {}, name, callback, {
-      context: context,
-      ctx: obj,
-      listening: listening
+        context: context,
+        ctx: obj,
+        listening: listening
     });
 
     if (listening) {
@@ -184,7 +300,7 @@
   // Inversion-of-control versions of `on`. Tell *this* object to listen to
   // an event in another object... keeping track of what it's listening to
   // for easier unbinding later.
-  Events.listenTo = function(obj, name, callback) {
+  Events.listenTo =  function(obj, name, callback) {
     if (!obj) return this;
     var id = obj._listenId || (obj._listenId = _.uniqueId('l'));
     var listeningTo = this._listeningTo || (this._listeningTo = {});
@@ -209,7 +325,7 @@
       var context = options.context, ctx = options.ctx, listening = options.listening;
       if (listening) listening.count++;
 
-      handlers.push({callback: callback, context: context, ctx: context || ctx, listening: listening});
+      handlers.push({ callback: callback, context: context, ctx: context || ctx, listening: listening });
     }
     return events;
   };
@@ -218,18 +334,18 @@
   // callbacks with that function. If `callback` is null, removes all
   // callbacks for the event. If `name` is null, removes all bound
   // callbacks for all events.
-  Events.off = function(name, callback, context) {
+  Events.off =  function(name, callback, context) {
     if (!this._events) return this;
     this._events = eventsApi(offApi, this._events, name, callback, {
-      context: context,
-      listeners: this._listeners
+        context: context,
+        listeners: this._listeners
     });
     return this;
   };
 
   // Tell this object to stop listening to either specific events ... or
   // to every object it's currently listening to.
-  Events.stopListening = function(obj, name, callback) {
+  Events.stopListening =  function(obj, name, callback) {
     var listeningTo = this._listeningTo;
     if (!listeningTo) return this;
 
@@ -308,14 +424,14 @@
   // the callback is invoked, its listener will be removed. If multiple events
   // are passed in using the space-separated syntax, the handler will fire
   // once for each event, not once for a combination of all events.
-  Events.once = function(name, callback, context) {
+  Events.once =  function(name, callback, context) {
     // Map the event into a `{event: once}` object.
     var events = eventsApi(onceMap, {}, name, callback, _.bind(this.off, this));
     return this.on(events, void 0, context);
   };
 
   // Inversion-of-control versions of `once`.
-  Events.listenToOnce = function(obj, name, callback) {
+  Events.listenToOnce =  function(obj, name, callback) {
     // Map the event into a `{event: once}` object.
     var events = eventsApi(onceMap, {}, name, callback, _.bind(this.stopListening, this, obj));
     return this.listenTo(obj, events);
@@ -338,7 +454,7 @@
   // passed the same arguments as `trigger` is, apart from the event name
   // (unless you're listening on `"all"`, which will cause your callback to
   // receive the true name of the event as the first argument).
-  Events.trigger = function(name) {
+  Events.trigger =  function(name) {
     if (!this._events) return this;
 
     var length = Math.max(0, arguments.length - 1);
@@ -508,7 +624,7 @@
       }
 
       // Update the `id`.
-      if (this.idAttribute in attrs) this.id = this.get(this.idAttribute);
+      this.id = this.get(this.idAttribute);
 
       // Trigger all relevant attribute changes.
       if (!silent) {
@@ -621,8 +737,8 @@
       // the model will be valid when the attributes, if any, are set.
       if (attrs && !wait) {
         if (!this.set(attrs, options)) return false;
-      } else if (!this._validate(attrs, options)) {
-        return false;
+      } else {
+        if (!this._validate(attrs, options)) return false;
       }
 
       // After a successful server-side save, the client is (optionally)
@@ -734,8 +850,8 @@
 
   // Underscore methods that we want to implement on the Model, mapped to the
   // number of arguments they take.
-  var modelMethods = {keys: 1, values: 1, pairs: 1, invert: 1, pick: 0,
-      omit: 0, chain: 1, isEmpty: 1};
+  var modelMethods = { keys: 1, values: 1, pairs: 1, invert: 1, pick: 0,
+      omit: 0, chain: 1, isEmpty: 1 };
 
   // Mix in each Underscore method as a proxy to `Model#attributes`.
   addUnderscoreMethods(Model, modelMethods, 'attributes');
@@ -771,8 +887,7 @@
     at = Math.min(Math.max(at, 0), array.length);
     var tail = Array(array.length - at);
     var length = insert.length;
-    var i;
-    for (i = 0; i < tail.length; i++) tail[i] = array[i + at];
+    for (var i = 0; i < tail.length; i++) tail[i] = array[i + at];
     for (i = 0; i < length; i++) array[i + at] = insert[i];
     for (i = 0; i < tail.length; i++) array[i + length + at] = tail[i];
   };
@@ -810,9 +925,9 @@
     remove: function(models, options) {
       options = _.extend({}, options);
       var singular = !_.isArray(models);
-      models = singular ? [models] : models.slice();
+      models = singular ? [models] : _.clone(models);
       var removed = this._removeModels(models, options);
-      if (!options.silent && removed.length) this.trigger('update', this, options);
+      if (!options.silent && removed) this.trigger('update', this, options);
       return singular ? removed[0] : removed;
     },
 
@@ -827,7 +942,7 @@
       if (options.parse && !this._isModel(models)) models = this.parse(models, options);
 
       var singular = !_.isArray(models);
-      models = singular ? (models ? [models] : []) : models.slice();
+      models = singular ? [models] : models.slice();
 
       var at = options.at;
       if (at != null) at = +at;
@@ -843,13 +958,13 @@
       var remove = options.remove;
 
       var sort = false;
-      var sortable = this.comparator && at == null && options.sort !== false;
+      var sortable = this.comparator && (at == null) && options.sort !== false;
       var sortAttr = _.isString(this.comparator) ? this.comparator : null;
 
       // Turn bare objects into model references, and prevent invalid models
       // from being added.
-      var model, i;
-      for (i = 0; i < models.length; i++) {
+      var model;
+      for (var i = 0; i < models.length; i++) {
         model = models[i];
 
         // If a duplicate is found, prevent it from being added and
@@ -893,7 +1008,7 @@
       var orderChanged = false;
       var replace = !sortable && add && remove;
       if (set.length && replace) {
-        orderChanged = this.length !== set.length || _.some(this.models, function(model, index) {
+        orderChanged = this.length != set.length || _.some(this.models, function(model, index) {
           return model !== set[index];
         });
         this.models.length = 0;
@@ -1014,7 +1129,7 @@
 
     // Pluck an attribute from each model in the collection.
     pluck: function(attr) {
-      return this.map(attr + '');
+      return _.invoke(this.models, 'get', attr);
     },
 
     // Fetch the default set of models for this collection, resetting the
@@ -1068,7 +1183,7 @@
     },
 
     // Define how to uniquely identify models in the collection.
-    modelId: function(attrs) {
+    modelId: function (attrs) {
       return attrs[this.model.prototype.idAttribute || 'id'];
     },
 
@@ -1106,12 +1221,6 @@
         this.models.splice(index, 1);
         this.length--;
 
-        // Remove references before triggering 'remove' event to prevent an
-        // infinite loop. #3693
-        delete this._byId[model.cid];
-        var id = this.modelId(model.attributes);
-        if (id != null) delete this._byId[id];
-
         if (!options.silent) {
           options.index = index;
           model.trigger('remove', model, this, options);
@@ -1120,12 +1229,12 @@
         removed.push(model);
         this._removeReference(model, options);
       }
-      return removed;
+      return removed.length ? removed : false;
     },
 
     // Method for checking whether an object should be considered a model for
     // the purposes of adding to the collection.
-    _isModel: function(model) {
+    _isModel: function (model) {
       return model instanceof Model;
     },
 
@@ -1151,16 +1260,14 @@
     // events simply proxy through. "add" and "remove" events that originate
     // in other collections are ignored.
     _onModelEvent: function(event, model, collection, options) {
-      if (model) {
-        if ((event === 'add' || event === 'remove') && collection !== this) return;
-        if (event === 'destroy') this.remove(model, options);
-        if (event === 'change') {
-          var prevId = this.modelId(model.previousAttributes());
-          var id = this.modelId(model.attributes);
-          if (prevId !== id) {
-            if (prevId != null) delete this._byId[prevId];
-            if (id != null) this._byId[id] = model;
-          }
+      if ((event === 'add' || event === 'remove') && collection !== this) return;
+      if (event === 'destroy') this.remove(model, options);
+      if (event === 'change') {
+        var prevId = this.modelId(model.previousAttributes());
+        var id = this.modelId(model.attributes);
+        if (prevId !== id) {
+          if (prevId != null) delete this._byId[prevId];
+          if (id != null) this._byId[id] = model;
         }
       }
       this.trigger.apply(this, arguments);
@@ -1171,14 +1278,14 @@
   // Underscore methods that we want to implement on the Collection.
   // 90% of the core usefulness of Backbone Collections is actually implemented
   // right here:
-  var collectionMethods = {forEach: 3, each: 3, map: 3, collect: 3, reduce: 0,
-      foldl: 0, inject: 0, reduceRight: 0, foldr: 0, find: 3, detect: 3, filter: 3,
+  var collectionMethods = { forEach: 3, each: 3, map: 3, collect: 3, reduce: 4,
+      foldl: 4, inject: 4, reduceRight: 4, foldr: 4, find: 3, detect: 3, filter: 3,
       select: 3, reject: 3, every: 3, all: 3, some: 3, any: 3, include: 3, includes: 3,
       contains: 3, invoke: 0, max: 3, min: 3, toArray: 1, size: 1, first: 3,
       head: 3, take: 3, initial: 3, rest: 3, tail: 3, drop: 3, last: 3,
       without: 0, difference: 0, indexOf: 3, shuffle: 1, lastIndexOf: 3,
       isEmpty: 1, chain: 1, sample: 3, partition: 3, groupBy: 3, countBy: 3,
-      sortBy: 3, indexBy: 3, findIndex: 3, findLastIndex: 3};
+      sortBy: 3, indexBy: 3};
 
   // Mix in each Underscore method as a proxy to `Collection#models`.
   addUnderscoreMethods(Collection, collectionMethods, 'models');
@@ -1428,9 +1535,9 @@
   var methodMap = {
     'create': 'POST',
     'update': 'PUT',
-    'patch': 'PATCH',
+    'patch':  'PATCH',
     'delete': 'DELETE',
-    'read': 'GET'
+    'read':   'GET'
   };
 
   // Set the default implementation of `Backbone.ajax` to proxy through to `$`.
@@ -1690,7 +1797,7 @@
       }
 
       // Add a cross-platform `addEventListener` shim for older browsers.
-      var addEventListener = window.addEventListener || function(eventName, listener) {
+      var addEventListener = window.addEventListener || function (eventName, listener) {
         return attachEvent('on' + eventName, listener);
       };
 
@@ -1711,7 +1818,7 @@
     // but possibly useful for unit testing Routers.
     stop: function() {
       // Add a cross-platform `removeEventListener` shim for older browsers.
-      var removeEventListener = window.removeEventListener || function(eventName, listener) {
+      var removeEventListener = window.removeEventListener || function (eventName, listener) {
         return detachEvent('on' + eventName, listener);
       };
 
@@ -1805,7 +1912,7 @@
       // fragment to store history.
       } else if (this._wantsHashChange) {
         this._updateHash(this.location, fragment, options.replace);
-        if (this.iframe && fragment !== this.getHash(this.iframe.contentWindow)) {
+        if (this.iframe && (fragment !== this.getHash(this.iframe.contentWindow))) {
           var iWindow = this.iframe.contentWindow;
 
           // Opening and closing the iframe tricks IE7 and earlier to push a
@@ -1867,9 +1974,14 @@
     _.extend(child, parent, staticProps);
 
     // Set the prototype chain to inherit from `parent`, without calling
-    // `parent`'s constructor function and add the prototype properties.
-    child.prototype = _.create(parent.prototype, protoProps);
-    child.prototype.constructor = child;
+    // `parent` constructor function.
+    var Surrogate = function(){ this.constructor = child; };
+    Surrogate.prototype = parent.prototype;
+    child.prototype = new Surrogate;
+
+    // Add prototype properties (instance properties) to the subclass,
+    // if supplied.
+    if (protoProps) _.extend(child.prototype, protoProps);
 
     // Set a convenience property in case the parent's prototype is needed
     // later.
@@ -1897,10 +2009,10 @@
 
   return Backbone;
 
-});
+}));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"underscore":2,"zepto-browserify":3}],2:[function(require,module,exports){
+},{"jquery":"jquery","underscore":3}],3:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -3450,7 +3562,7 @@
   }
 }.call(this));
 
-},{}],3:[function(require,module,exports){
+},{}],"jquery":[function(require,module,exports){
 /* Zepto v1.1.6 - zepto event ajax form ie - zeptojs.com/license */
 
 var Zepto = (function() {
@@ -5043,120 +5155,4 @@ exports.$ = window.$
   }
 })(Zepto)
 ;
-},{}],4:[function(require,module,exports){
-var Backbone = require('backbone');
-var _ = require('underscore');
-// Backbone.$ = jquery;
-
-var tuti = {}; // create namespace for our app
-
-tuti.Router = Backbone.Router.extend({
-  routes: {
-    '*filter' : 'setFilter'
-  },
-  setFilter: function(params) {
-    console.log('tuti.router.params = ' + params); // just for didactical purposes.
-    window.filter = params.trim() || '';
-    tuti.todoList.trigger('reset');
-  }
-});
-
-tuti.Todo = Backbone.Model.extend({
-  defaults: {
-    title: '',
-    completed: false,
-  },
-  toggle: function(){
-    this.save({completed: !this.get('completed')});
-  }
-});
-
-tuti.TodoList = Backbone.Collection.extend({
-  model: tuti.Todo,
-  // localStorage: new Store("backbone-todo")
-});
-
-// instance of the Collection
-tuti.todoList = new tuti.TodoList();
-
-// renders individual todo items list (li)
-tuti.TodoView = Backbone.View.extend({
-  tagName: 'li',
-  template: _.template($('#item-template').html()),
-  render: function(){
-    this.$el.html(this.template(this.model.toJSON()));
-    this.input = this.$('.edit');
-    return this; // enable chained calls
-  },
-  initialize: function(){
-    this.model.on('change', this.render, this);
-  },
-  events: {
-    'dblclick label' : 'edit',
-    'keypress .edit' : 'updateOnEnter',
-    'blur .edit' : 'close',
-    'click .toggle': 'toggleCompleted'
-  },
-  edit: function(){
-    this.$el.addClass('editing');
-    this.input.focus();
-  },
-  close: function(){
-    var value = this.input.val().trim();
-    if(value) {
-      this.model.save({title: value});
-    }
-    this.$el.removeClass('editing');
-  },
-  updateOnEnter: function(e){
-    if(e.which == 13){
-      this.close();
-    }
-  },
-  toggleCompleted: function(){
-    this.model.toggle();
-  }
-});
-
-
-// renders the full list of todo items calling TodoView for each one.
-tuti.AppView = Backbone.View.extend({
-  el: '#todoapp',
-  initialize: function () {
-    this.input = this.$('#new-todo');
-    // when new elements are added to the collection render then with addOne
-    tuti.todoList.on('add', this.addOne, this);
-    tuti.todoList.on('reset', this.addAll, this);
-    tuti.todoList.fetch(); // Loads list from local storage
-  },
-  events: {
-    'keypress #new-todo': 'createTodoOnEnter'
-  },
-  createTodoOnEnter: function(e){
-    if ( e.which !== 13 || !this.input.val().trim() ) { // ENTER_KEY = 13
-      return;
-    }
-    tuti.todoList.create(this.newAttributes());
-    this.input.val(''); // clean input box
-  },
-  addOne: function(todo){
-    var view = new tuti.TodoView({model: todo});
-    $('#todo-list').append(view.render().el);
-  },
-  addAll: function(){
-    this.$('#todo-list').html(''); // clean the todo list
-    tuti.todoList.each(this.addOne, this);
-  },
-  newAttributes: function(){
-    return {
-      title: this.input.val().trim(),
-      completed: false
-    };
-  }
-});
-
-tuti.router = new tuti.Router();
-Backbone.history.start();
-
-tuti.appView = new tuti.AppView();
-},{"backbone":1,"underscore":2}]},{},[4]);
+},{}]},{},[1]);

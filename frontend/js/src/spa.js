@@ -1,6 +1,5 @@
 var Backbone = require('backbone');
 var _ = require('underscore');
-// Backbone.$ = jquery;
 
 var tuti = {}; // create namespace for our app
 
@@ -108,6 +107,7 @@ tuti.AppView = Backbone.View.extend({
     };
   }
 });
+
 
 tuti.router = new tuti.Router();
 Backbone.history.start();
