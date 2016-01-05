@@ -35,10 +35,16 @@ module.exports = function(grunt) {
         dest: 'public/css/<%= pkg.name %>.min.css'
       }
     },
+    copy: {
+      move: {
+        src: 'frontend/js/<%= pkg.name %>.js',
+        dest: 'public/js/<%= pkg.name %>.js'
+      }
+    },
     watch: {
       minifyjs: {
         files: ['frontend/js/src/spa.js'],
-        tasks: ['browserify', 'uglify'],
+        tasks: ['browserify', 'uglify', 'copy'],
         options: {
           spawn: false,
         },
@@ -58,6 +64,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-browserify');
 
   // Default task(s).

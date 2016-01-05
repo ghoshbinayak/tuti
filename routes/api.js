@@ -31,17 +31,18 @@ router.use('/user', require('./user'));
 /* Custom Pages */
 router.use('/pages', require('./pages'));
 
-/* Unknown api */
-router.all('/*', function(req, res){
-	res.json({error: {message: 'Wrong endpoint',
-					  type: 'unsupportedAPI'}});
-});
 
 router.use(function (err, req, res, next) {
   if (err.name === 'UnauthorizedError') {
     res.status(401).json({error: {message: 'Unauthorized request.',
 						 		  type: 'UnauthorizedError'}});
   }
+});
+
+/* Unknown api */
+router.all('/*', function(req, res){
+	res.status(404).json({error: {message: 'Wrong endpoint',
+					  type: 'unsupportedAPI'}});
 });
 
 module.exports = router;

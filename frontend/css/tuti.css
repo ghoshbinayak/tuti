@@ -1,8 +1,13 @@
-.box {
-  color: #fe33ac;
-  border-color: #fdcdea;
+footer {
+  font-family: Roboto Slab;
+  font-weight: lighter;
 }
-.box div {
-  -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+#love {
+  width: 25px;
+  height: 18px;
+  margin-bottom: -4px;
+  fill: #8F8183;
+}
+.active {
+  color: red;
 }

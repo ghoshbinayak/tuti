@@ -38,7 +38,8 @@ router.post('/', function(req, res){
 			}
 		}
 	}).catch(function(err){
-		res.status(401).json({ error: {'message': err.toString(),
+		console.log(err);
+		res.status(500).json({ error: {'message': 'Something went wrong',
 								   'type': 'AuthFailure'
 								}});
 	});

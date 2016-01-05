@@ -1,115 +1,182 @@
-var Backbone = require('backbone');
+window.$ = require('jquery').Zepto;
 var _ = require('underscore');
+var Backbone = require('../libs/backbone');
+var hdb = require('handlebars');
+var Basil  = require('../libs/basil');
+// var jdecode = require('jwt-decode');
+var Tuti = {}; // create namespace
 
-var tuti = {}; // create namespace for our app
 
-tuti.Router = Backbone.Router.extend({
-  routes: {
-    '*filter' : 'setFilter'
+// The global event handler 
+Tuti.vent = _.extend({}, Backbone.Events);
+
+// Local storage 
+Tuti.store = new Basil({
+  expireDays: 7
+});
+
+// The application menu items
+Tuti.AppMenu = {
+  "Products": {
+    url: "products",
+    active: false
   },
-  setFilter: function(params) {
-    console.log('tuti.router.params = ' + params); // just for didactical purposes.
-    window.filter = params.trim() || '';
-    tuti.todoList.trigger('reset');
-  }
-});
-
-tuti.Todo = Backbone.Model.extend({
-  defaults: {
-    title: '',
-    completed: false,
+  "Blog": {
+    url: "blog",
+    active: false
   },
-  toggle: function(){
-    this.save({completed: !this.get('completed')});
+  "About": {
+    url: "about",
+    active: false
   }
-});
+};
 
-tuti.TodoList = Backbone.Collection.extend({
-  model: tuti.Todo,
-  // localStorage: new Store("backbone-todo")
-});
 
-// instance of the Collection
-tuti.todoList = new tuti.TodoList();
-
-// renders individual todo items list (li)
-tuti.TodoView = Backbone.View.extend({
-  tagName: 'li',
-  template: _.template($('#item-template').html()),
-  render: function(){
-    this.$el.html(this.template(this.model.toJSON()));
-    this.input = this.$('.edit');
+// The parent view (Mother of all)
+Tuti.AppShell = Backbone.View.extend({
+  el: '#app-shell-container',
+  template: hdb.compile($('#app-shell').html()),
+  renderShell: function(location){
+    for(var key in Tuti.AppMenu){
+      if(key === location){
+        Tuti.AppMenu[key].active = true;
+      }
+      else {
+        Tuti.AppMenu[key].active = false; 
+      }
+    }
+    var token = Tuti.store.get('token');
+    var user;
+    if(token){
+      // user = jdecode(token);
+      // console.log(user);
+      user = Tuti.store.get('user.email');
+    }
+    this.$el.html(this.template({menu: Tuti.AppMenu, user: user}));
     return this; // enable chained calls
   },
   initialize: function(){
-    this.model.on('change', this.render, this);
+    this.renderShell();
+    Tuti.vent.on('goto:home', this.gotoHome, this);
+    Tuti.vent.on('goto:login', this.gotoLogin, this);
+    Tuti.vent.on('goto:about', this.gotoAbout, this);
   },
-  events: {
-    'dblclick label' : 'edit',
-    'keypress .edit' : 'updateOnEnter',
-    'blur .edit' : 'close',
-    'click .toggle': 'toggleCompleted'
-  },
-  edit: function(){
-    this.$el.addClass('editing');
-    this.input.focus();
-  },
-  close: function(){
-    var value = this.input.val().trim();
-    if(value) {
-      this.model.save({title: value});
+  gotoLogin: function(){
+    if(!Tuti.loginview){
+      Tuti.loginview = new Tuti.LoginView();
     }
-    this.$el.removeClass('editing');
+    this.$("#content").html(Tuti.loginview.render().el);
+    // this.renderShell('Login');
   },
-  updateOnEnter: function(e){
-    if(e.which == 13){
-      this.close();
-    }
+  gotoHome: function(){
+    this.renderShell('Home');
   },
-  toggleCompleted: function(){
-    this.model.toggle();
+  gotoAbout: function(){
+    this.renderShell('About');
   }
 });
 
 
-// renders the full list of todo items calling TodoView for each one.
-tuti.AppView = Backbone.View.extend({
-  el: '#todoapp',
-  initialize: function () {
-    this.input = this.$('#new-todo');
-    // when new elements are added to the collection render then with addOne
-    tuti.todoList.on('add', this.addOne, this);
-    tuti.todoList.on('reset', this.addAll, this);
-    tuti.todoList.fetch(); // Loads list from local storage
+// Login view
+Tuti.LoginView = Backbone.View.extend({
+  tagName: 'div',
+  className: 'login-container',
+  template: hdb.compile($('#app-login').html()),
+  render: function(options){
+    this.$el.html(this.template(options));
+    return this;
   },
   events: {
-    'keypress #new-todo': 'createTodoOnEnter'
+    'click button': 'submit',
+    'keypress input': 'onEnter'
   },
-  createTodoOnEnter: function(e){
-    if ( e.which !== 13 || !this.input.val().trim() ) { // ENTER_KEY = 13
+  onEnter: function(e){
+    if(e.which === 13){
+      this.submit(e);
+    }
+  },
+  submit: function(e){
+    e.preventDefault();
+    var formData = {};
+    this.$el.children( 'input' ).each( function( i, el ) {
+      if( $( el ).val() !== '' ){
+        formData[ el.name ] = $( el ).val();
+      }
+    });
+    if(!formData.email || !formData.password){
+      this.render({error: 'incomplete form'});
       return;
     }
-    tuti.todoList.create(this.newAttributes());
-    this.input.val(''); // clean input box
-  },
-  addOne: function(todo){
-    var view = new tuti.TodoView({model: todo});
-    $('#todo-list').append(view.render().el);
-  },
-  addAll: function(){
-    this.$('#todo-list').html(''); // clean the todo list
-    tuti.todoList.each(this.addOne, this);
-  },
-  newAttributes: function(){
-    return {
-      title: this.input.val().trim(),
-      completed: false
-    };
+    Backbone.ajax({
+      dataType: "json",
+      type: 'POST',
+      url: "/api/login",
+      data: formData,
+      success: function(val){
+        Tuti.store.set('token', val.success.token);
+        Tuti.store.set('user.email', val.success.user.email);
+        Tuti.store.set('user.id', val.success.user.id);
+        Tuti.vent.trigger('goto:home');
+      },
+      error: function(response, texterror, content){
+        if(response.status == 401){
+          Tuti.loginview.render({error: 'Invalid email or password'});
+        }
+        else {
+          Tuti.loginview.render({error: 'Something went wrong, try again'});
+        }
+      }
+    });
   }
 });
 
 
-tuti.router = new tuti.Router();
-Backbone.history.start();
+// Routes
+Tuti.AppRouter = Backbone.Router.extend({
+  routes: {
+    "home":   "home",    
+    "login": "login",
+    "about": "about",
+    "logout": "logout"
+  },
 
-tuti.appView = new tuti.AppView();
+  home: function() {
+    Tuti.vent.trigger('goto:home');
+  },
+  login: function() {
+    Tuti.vent.trigger('goto:login');
+  },
+  about: function() {
+    Tuti.vent.trigger('goto:about');
+  },
+  logout: function(){
+    Tuti.store.reset();
+    Tuti.vent.trigger('goto:home');
+  }
+});
+
+
+Tuti.App = new Tuti.AppShell();
+Tuti.Router = new Tuti.AppRouter();
+
+Backbone.history.start({pushState: true});
+
+
+// Globally capture clicks. If they are internal and not in the pass
+// through list, route them through Backbone's navigate method.
+$(document).on("click", "a[href^='/']", function(event){
+  href = $(event.currentTarget).attr('href');
+
+  // chain 'or's for other black list routes
+  // passThrough = href.indexOf('sign_out') >= 0;
+
+  //  Allow shift+click for new tabs, etc.
+  if(!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey){
+    event.preventDefault();
+    // Remove leading slashes and hash bangs (backward compatablility)
+    url = href.replace(/^\//,'').replace('\#\!\/','');
+
+    // Instruct Backbone to trigger routing events
+    Tuti.Router.navigate(url, { trigger: true });  
+  }
+});
